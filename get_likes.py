@@ -6,12 +6,16 @@ from twython import Twython, TwythonError, TwythonRateLimitError, TwythonAuthErr
 import time
 import datetime
 import csv
-import os
-import glob
 import pandas as pd
-import sys
 
-##authorization2
+RUN_TIME = 20
+f = open("temp_update_index.txt", "r", encoding="utf8")
+UPDATE_INDEX = int(f.readline())
+f.close()
+print(UPDATE_INDEX)
+
+########################################################################################################################
+### authorization2
 APP_KEY = 'c2LQcGYB66Feu590wUxAxrbL0'
 APP_SECRET = '8WJR22nTiTg5pzeBL2Q4tYIfNYmRBrcvvwhgd8p20fTJIZL0eP'
 
@@ -1766,7 +1770,11 @@ auth = 2
 
 count = 0
 
+########################################################################################################################
 
+
+########################################################################################################################
+### new functions defined
 # Twitter authorization update function
 def new_auth(twitter, auth):
     time.sleep(1)
@@ -1816,6 +1824,7 @@ def clean_tweet(tweet):
 
 # output collected tweets as csv
 def tweets_csv(tweets):
+    f = open("temp_liked_tweets_file.txt", "w", encoding="utf8")
     main_columns = ['follower_id', 'liked_user_id', 'liked_user_name', 'liked_user_screenname', 'liked_user_location',
                     'tweet_id', 'tweet_creation_time', 'tweet_text', 'tweet_language', 'tweet_reply_to_tweet_id',
                     'tweet_reply_to_user_id', 'tweet_is_quote', 'tweet_retweet_count', 'tweet_favorite_count',
@@ -1825,8 +1834,9 @@ def tweets_csv(tweets):
     current_time = str(datetime.datetime.now().time()).replace(":", "")
     dfmain = pd.DataFrame.from_records(tweets, columns=main_columns)
     # change file output domain as appropriate
-    dfmain.to_csv(r'C:/Users/wangt/Desktop/PythonProjects/Twitter_Project/Patrick_liked_tweets_' + current_time + '.csv', index=False)
-
+    dfmain.to_csv(r'Patrick_liked_tweets_' + current_time + '.csv', index=False)
+    f.write(r'Patrick_liked_tweets_' + current_time + '.csv')
+    f.close()
 
 # output errors as csv
 def errors_csv(errors, error_user):
@@ -1834,8 +1844,8 @@ def errors_csv(errors, error_user):
     current_time = str(datetime.datetime.now().time()).replace(":", "")
     dfmain = pd.DataFrame.from_records(list(zip(errors, error_user)), columns=errorcolumns)
     # change file output domain as appropriate
-    dfmain.to_csv(r'C:/Users/wangt/Desktop/PythonProjects/Twitter_Project/Patrick_liked_errors_' + current_time + '.csv')
-
+    dfmain.to_csv(r'Patrick_liked_errors_' + current_time + '.csv')
+########################################################################################################################
 
 start_time = time.time()
 
@@ -1847,18 +1857,18 @@ tweets = []
 i = 0
 
 # change file input domain as appropriate
-path_data = list(csv.reader(open('C:/Users/wangt/Desktop/PythonProjects/Twitter_Project/Patrick_likes.csv', newline='')))
+path_data = list(csv.reader(open('Patrick_likes.csv', newline='')))
 row_count = sum(1 for row in path_data)
 
 # change the range of the file based on the last user's tweets you have collected
 # for example, if the last user in the previous session is in the 24th row of the domain file,
 # set the range to (24,row_count) to only collect new users for this session
-users = [path_data[n][0].replace("/", "") for n in range(1, row_count)]
+users = [path_data[n][0].replace("/", "") for n in range(UPDATE_INDEX, row_count)]
 
 # control run time of program (time is measured in seconds). len(page) > 0 ensures that we collect all
 # tweets from a user before terminating the program.
-run_time = 10
-while time.time() - start_time < run_time or len(page) > 0:
+
+while time.time() - start_time < RUN_TIME or len(page) > 0:
 
     # This try-except block prevents errors when we reach the end of the input file
     try:
